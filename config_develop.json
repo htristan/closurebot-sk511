@@ -1,11 +1,11 @@
 {
-  "db_name": "ON511-ClosureDB-Dev",
-  "function_name": "ClosureBot-ON511-Dev",
-  "Thread-SouthernOntario": 1123519680917819503,
-  "Thread-GTA": 1123517850502565898,
-  "Thread-CentralOntario": 1123517842969604138,
-  "Thread-NorthernOntario": 1123519381499019386,
-  "Thread-CatchAll": 1123663045743354059,
-  "license_notice": "Contains information licensed under the Open Government Licence – Ontario.",
-  "timezone": "US/Eastern"
+  "db_name": "SK511-ClosureDB-Dev",
+  "function_name": "ClosureBot-SK511-Dev",
+  "Thread-NorthOfSaskatoon": 111,
+  "Thread-SouthOfSaskatoon": 112,
+  "Thread-Saskatoon": 113,
+  "Thread-Regina": 114,
+  "Thread-CatchAll": 111,
+  "license_notice": "Contains information licensed under the Open Government Licence – Saskatchewan.",
+  "timezone": "US/Central"
 }
