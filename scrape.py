@@ -14,23 +14,89 @@ from pytz import timezone
 import random
 
 # Define the coordinates of your polygons
-polygon_GTA = Polygon([
-    (43.87568031, -78.43468662),
-    (43.82078823, -78.88855484),
-    (43.74310867, -79.1407252),
-    (43.73611803, -79.13384386),
-    (43.59837333, -79.36036016),
-    (43.60378104, -79.43379127),
-    (43.40218933, -79.67253612),
-    (43.4786045, -79.80584269),
-    (43.69673616, -79.97053635),
-    (43.97844807, -79.69290989),
-    (44.007223, -79.28352851),
-    (44.02245114, -78.75180326),
-    (43.87568031, -78.43468662)
+polygon_NorthOfSaskatoon = Polygon([
+    (52.08358468, -101.3633078),
+    (52.15326231, -110.0019425),
+    (59.59589227, -110.0022985),
+    (59.59579836, -102.0026785),
+    (56.0939664, -102.0029473),
+    (56.09269968, -102.0004443),
+    (55.48350911, -102.0018806),
+    (55.48286337, -101.5749425),
+    (55.2738415, -101.5803789),
+    (55.27335287, -101.5531535),
+    (55.06338024, -101.552579),
+    (55.06403752, -101.5256409),
+    (54.45378651, -101.531939),
+    (54.45428376, -101.5050009),
+    (54.24510704, -101.5050009),
+    (54.24493987, -101.4834992),
+    (54.03518069, -101.4837322),
+    (54.035187, -101.4616889),
+    (53.42541879, -101.4616193),
+    (53.42541382, -101.4407278),
+    (53.21568936, -101.4407827),
+    (53.21568567, -101.4202263),
+    (53.00590074, -101.4202326),
+    (53.00593799, -101.4017652),
+    (52.40018651, -101.4017658),
+    (52.40020391, -101.3815595),
+    (52.19053343, -101.3816165),
+    (52.19054069, -101.3632629),
+    (52.08358468, -101.3633078),
 ])
 
+polygon_Saskatoon = Polygon([
+    (52.11589261, -106.2820469),
+    (52.02487489, -106.2831642),
+    (52.02523304, -106.4847216),
+    (52.12098102, -106.484351),
+    (52.11589261, -106.2820469),
+])
 
+polygon_Regina = Polygon([
+    (50.17359352, -104.1636836),
+    (50.17216334, -104.5231327),
+    (50.35053487, -104.5216751),
+    (50.35088726, -104.1709136),
+    (50.17359352, -104.1636836),
+])
+
+polygon_SouthOfSaskatoon = Polygon([
+    (52.08358468, -101.3633078),
+    (51.58065672, -101.3633525),
+    (51.58067583, -101.3438163),
+    (51.39184099, -101.3442131),
+    (51.39147599, -101.3409184),
+    (51.18074826, -101.3413662),
+    (51.18070637, -101.3220048),
+    (50.56546801, -101.3220277),
+    (50.5654484, -101.3031241),
+    (50.35397684, -101.303187),
+    (50.35404559, -101.2837411),
+    (50.14255322, -101.2836527),
+    (50.14259442, -101.2649087),
+    (49.53120142, -101.2649914),
+    (49.53119798, -101.2503024),
+    (49.31576477, -101.2503799),
+    (49.31578312, -101.233322),
+    (49.10410524, -101.233232),
+    (49.10398302, -101.2144583),
+    (48.5958042, -101.2143149),
+    (48.59589248, -110.0018112),
+    (52.15326231, -110.0019425),
+    (52.08358468, -101.3633078),
+    (52.02523304, -106.4847216),
+    (52.02487489, -106.2831642),
+    (52.11589261, -106.2820469),
+    (52.12098102, -106.484351),
+    (52.02523304, -106.4847216),
+    (50.35053487, -104.5216751),
+    (50.17216334, -104.5231327),
+    (50.17359352, -104.1636836),
+    (50.35088726, -104.1709136),
+    (50.35053487, -104.5216751),
+])
 # Load the configuration file
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -67,28 +133,28 @@ def float_to_decimal(event):
 def check_which_polygon_point(point):
     # Function to see which polygon a point is in, and returns the text. Returns "Other" if unknown.
     try:
-        if polygon_GTA.contains(point):
-            return 'GTA'
-        elif polygon_CentralOntario.contains(point):
-            return 'Central Ontario'
-        elif polygon_NorthernOntario.contains(point):
-            return 'Northern Ontario'
-        elif polygon_SouthernOntario.contains(point):
-            return 'Southern Ontario'
+        if polygon_Regina.contains(point):
+            return 'Regina'
+        elif polygon_Saskatoon.contains(point):
+            return 'Saskatoon'
+        elif polygon_NorthOfSaskatoon.contains(point):
+            return 'NorthOfSaskatoon'
+        elif polygon_SouthOfSaskatoon.contains(point):
+            return 'SouthOfSaskatoon'
         else:
             return 'Other'
     except:
         return 'Other'
 
 def getThreadID(threadName):
-    if threadName == 'GTA':
-        return config['Thread-GTA']
-    elif threadName == 'Central Ontario':
-        return config['Thread-CentralOntario']
-    elif threadName == 'Northern Ontario':
-        return config['Thread-NorthernOntario']
-    elif threadName == 'Southern Ontario':
-        return config['Thread-SouthernOntario']
+    if threadName == 'Regina':
+        return config['Thread-Regina']
+    elif threadName == 'Saskatoon':
+        return config['Thread-Saskatoon']
+    elif threadName == 'NorthOfSaskatoon':
+        return config['Thread-NorthOfSaskatoon']
+    elif threadName == 'SouthOfSaskatoon':
+        return config['Thread-SouthOfSaskatoon']
     else:
         return config['Thread-CatchAll'] #Other catch all thread
 
@@ -116,7 +182,7 @@ def post_to_discord_closure(event,threadName=None):
 
 
     urlWME = f"https://www.waze.com/en-GB/editor?env=usa&lon={event['Longitude']}&lat={event['Latitude']}&zoomLevel=15"
-    url511 = f"https://511on.ca/map#{URLType}-{event['ID']}"
+    url511 = f"https://hotline.gov.sk.ca/map#{URLType}-{event['ID']}"
     urlLivemap = f"https://www.waze.com/live-map/directions?dir_first=no&latlng={event['Latitude']}%2C{event['Longitude']}&overlay=false&zoom=16"
 
     embed = DiscordEmbed(title=f"Closed", color=15548997)
