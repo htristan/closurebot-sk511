@@ -218,7 +218,7 @@ def post_to_discord_updated(event,threadName=None):
         URLType = 'Closures'
 
     urlWME = f"https://www.waze.com/en-GB/editor?env=usa&lon={event['Longitude']}&lat={event['Latitude']}&zoomLevel=15"
-    url511 = f"https://511on.ca/map#{URLType}-{event['ID']}"
+    url511 = f"https://hotline.gov.sk.ca/map#{URLType}-{event['ID']}"
     urlLivemap = f"https://www.waze.com/live-map/directions?dir_first=no&latlng={event['Latitude']}%2C{event['Longitude']}&overlay=false&zoom=16"
 
     embed = DiscordEmbed(title=f"Closure Update", color='ff9a00')
