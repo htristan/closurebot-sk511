@@ -367,14 +367,14 @@ def close_recent_events(responseObject):
         markCompleted = False
         # If an item's ID is not in the set of active event IDs, mark it as closed
         if item['EventID'] not in active_event_ids:
-            markCompleted == True
+            markCompleted = True
         else:
             # item exists, but now we need to check to see if it's no longer a full closure
             event = [x for x in data if x['ID']==item['EventID']]
             if event:
                 if event[0]['IsFullClosure'] is False:
                     #now it's no longer a full closure - markt it as closed.
-                    markCompleted == True
+                    markCompleted = True
         # process relevant completions
         if markCompleted == True:
             # Convert float values in the item to Decimal
