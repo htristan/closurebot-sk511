@@ -106,8 +106,8 @@ DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
 AWS_ACCESS_KEY_ID = os.environ['AWS_DB_KEY']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_DB_SECRET_ACCESS_KEY']
 
-discordUsername = "SK511"
-discordAvatarURL = "https://pbs.twimg.com/profile_images/1256233970905341959/EKlyRkOM_400x400.jpg"
+discordUsername = "HighwayHotline"
+discordAvatarURL = "https://pbs.twimg.com/profile_images/1546604255641051137/ErA4kJup_400x400.jpg"
 
 # Create a DynamoDB resource object
 dynamodb = boto3.resource('dynamodb',
