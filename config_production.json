@@ -1,11 +1,11 @@
 {
   "db_name": "SK511-ClosureDB",
   "function_name": "ClosureBot-SK511",
-  "Thread-NorthOfSaskatoon": 111,
-  "Thread-SouthOfSaskatoon": 112,
-  "Thread-Saskatoon": 113,
-  "Thread-Regina": 114,
-  "Thread-CatchAll": 111,
+  "Thread-NorthOfSaskatoon": 1142524043019436113,
+  "Thread-SouthOfSaskatoon": 1142524183276957696,
+  "Thread-Saskatoon": 1142524123885617232,
+  "Thread-Regina": 1142524237014384780,
+  "Thread-CatchAll": 1142524329565880503,
   "license_notice": "Contains information licensed under the Open Government Licence – Saskatchewan.",
   "timezone": "US/Central"
 }

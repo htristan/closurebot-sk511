@@ -13,52 +13,101 @@ import calendar
 from pytz import timezone
 import random
 
-# Define the coordinates of your polygon
-polygon_filterPolygon = Polygon([
-    (43.67878795749117, -79.93304294115251),
-    (43.66090777561015, -80.55651706224626),
-    (43.276195634296236, -82.07263034349626),
-    (42.8548164344217, -82.28274386888688),
-    (42.29456999770389, -82.46813815599626),
-    (42.22443967103919, -81.72244113451188),
-    (42.38998433799022, -80.97674411302752),
-    (42.72985557217411, -79.52654880052752),
-    (42.84273447508291, -78.86187594896501),
-    (43.268196428606124, -79.06237643724626),
-    (43.30418457436259, -79.67211764818376),
-    (43.67878795749117, -79.93304294115251)
+# Define the coordinates of your polygons
+polygon_NorthOfSaskatoon = Polygon([
+    (52.14329076, -101.60918841),
+    (52.25906198, -110.00539571),
+    (59.99970075, -110.00638475),
+    (59.99943989, -102.00744016),
+    (56.16101778, -102.00818684),
+    (56.1574991, -102.00123411),
+    (55.80974752, -102.00522399),
+    (55.80795381, -101.96372926),
+    (55.46067083, -101.96771914),
+    (55.45931352, -101.92542643),
+    (55.10938957, -101.92383048),
+    (55.11121533, -101.88233574),
+    (54.76051808, -101.88871955),
+    (54.76189934, -101.84722482),
+    (54.41418622, -101.84722482),
+    (54.41372186, -101.80971996),
+    (54.06439081, -101.81036725),
+    (54.06440833, -101.77135812),
+    (53.7150522, -101.7711647),
+    (53.71503838, -101.73535511),
+    (53.36580379, -101.73550749),
+    (53.36579354, -101.7006287),
+    (53.01639096, -101.70064617),
+    (53.0164944, -101.67156993),
+    (52.66718474, -101.67157163),
+    (52.66723309, -101.6376654),
+    (52.3181484, -101.63782366),
+    (52.31816857, -101.60906373),
+    (52.14329076, -101.60918841),
 ])
 
-polygon_GTA = Polygon([
-    (43.87568031, -78.43468662),
-    (43.82078823, -78.88855484),
-    (43.74310867, -79.1407252),
-    (43.73611803, -79.13384386),
-    (43.59837333, -79.36036016),
-    (43.60378104, -79.43379127),
-    (43.40218933, -79.67253612),
-    (43.4786045, -79.80584269),
-    (43.69673616, -79.97053635),
-    (43.97844807, -79.69290989),
-    (44.007223, -79.28352851),
-    (44.02245114, -78.75180326),
-    (43.87568031, -78.43468662)
+polygon_Saskatoon = Polygon([
+    (52.1997017, -106.47235261),
+    (52.04687469, -106.47545606),
+    (52.04786957, -106.81311548),
+    (52.20272507, -106.81208616),
+    (52.1997017, -106.47235261),
 ])
 
+polygon_Regina = Polygon([
+    (50.29331533, -104.27689887),
+    (50.28934262, -104.87536849),
+    (50.58481908, -104.87131979),
+    (50.58579795, -104.28587098),
+    (50.29331533, -104.27689887),
+])
+
+polygon_SouthOfSaskatoon = Polygon([
+    (52.14329076, -101.60918841),
+    (51.96849088, -101.60931255),
+    (51.96854397, -101.57726761),
+    (51.65511387, -101.57836959),
+    (51.65409998, -101.56921777),
+    (51.3020785, -101.5704618),
+    (51.30196214, -101.53890227),
+    (50.94852225, -101.5389657),
+    (50.94846777, -101.50867813),
+    (50.5943801, -101.50885271),
+    (50.59457107, -101.4770586),
+    (50.2404256, -101.47681312),
+    (50.24054005, -101.44696863),
+    (49.88667062, -101.44719837),
+    (49.88666107, -101.41750665),
+    (49.53267992, -101.41772207),
+    (49.5327309, -101.39256115),
+    (49.1780701, -101.39231103),
+    (49.17773062, -101.36238426),
+    (48.99945611, -101.36198579),
+    (48.99970135, -110.00503113),
+    (52.25906198, -110.00539571),
+    (52.14329076, -101.60918841),
+    (52.04786957, -106.81311548),
+    (52.04687469, -106.47545606),
+    (52.1997017, -106.47235261),
+    (52.20272507, -106.81208616),
+    (52.04786957, -106.81311548),
+    (50.58481908, -104.87131979),
+    (50.28934262, -104.87536849),
+    (50.29331533, -104.27689887),
+    (50.58579795, -104.28587098),
+    (50.58481908, -104.87131979),
+])
 
 # Load the configuration file
 with open('config.json', 'r') as f:
     config = json.load(f)
 
-# Define if we should use the filter or just open it up wide to everyone
-skipPolygon = True
-
 DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
 AWS_ACCESS_KEY_ID = os.environ['AWS_DB_KEY']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_DB_SECRET_ACCESS_KEY']
 
-discordUsername = "SK511"
-discordAvatarURL = "https://pbs.twimg.com/profile_images/1256233970905341959/EKlyRkOM_400x400.jpg"
+discordUsername = "HighwayHotline"
+discordAvatarURL = "https://pbs.twimg.com/profile_images/1546604255641051137/ErA4kJup_400x400.jpg"
 
 # Create a DynamoDB resource object
 dynamodb = boto3.resource('dynamodb',
@@ -85,28 +134,28 @@ def float_to_decimal(event):
 def check_which_polygon_point(point):
     # Function to see which polygon a point is in, and returns the text. Returns "Other" if unknown.
     try:
-        if polygon_GTA.contains(point):
-            return 'GTA'
-        elif polygon_CentralOntario.contains(point):
-            return 'Central Ontario'
-        elif polygon_NorthernOntario.contains(point):
-            return 'Northern Ontario'
-        elif polygon_SouthernOntario.contains(point):
-            return 'Southern Ontario'
+        if polygon_Regina.contains(point):
+            return 'Regina'
+        elif polygon_Saskatoon.contains(point):
+            return 'Saskatoon'
+        elif polygon_NorthOfSaskatoon.contains(point):
+            return 'NorthOfSaskatoon'
+        elif polygon_SouthOfSaskatoon.contains(point):
+            return 'SouthOfSaskatoon'
         else:
             return 'Other'
     except:
         return 'Other'
 
 def getThreadID(threadName):
-    if threadName == 'GTA':
-        return config['Thread-GTA']
-    elif threadName == 'Central Ontario':
-        return config['Thread-CentralOntario']
-    elif threadName == 'Northern Ontario':
-        return config['Thread-NorthernOntario']
-    elif threadName == 'Southern Ontario':
-        return config['Thread-SouthernOntario']
+    if threadName == 'Regina':
+        return config['Thread-Regina']
+    elif threadName == 'Saskatoon':
+        return config['Thread-Saskatoon']
+    elif threadName == 'NorthOfSaskatoon':
+        return config['Thread-NorthOfSaskatoon']
+    elif threadName == 'SouthOfSaskatoon':
+        return config['Thread-SouthOfSaskatoon']
     else:
         return config['Thread-CatchAll'] #Other catch all thread
 
@@ -134,7 +183,7 @@ def post_to_discord_closure(event,threadName=None):
 
 
     urlWME = f"https://www.waze.com/en-GB/editor?env=usa&lon={event['Longitude']}&lat={event['Latitude']}&zoomLevel=15"
-    url511 = f"https://511on.ca/map#{URLType}-{event['ID']}"
+    url511 = f"https://hotline.gov.sk.ca/map#{URLType}-{event['ID']}"
     urlLivemap = f"https://www.waze.com/live-map/directions?dir_first=no&latlng={event['Latitude']}%2C{event['Longitude']}&overlay=false&zoom=16"
 
     embed = DiscordEmbed(title=f"Closed", color=15548997)
@@ -169,7 +218,7 @@ def post_to_discord_updated(event,threadName=None):
         URLType = 'Closures'
 
     urlWME = f"https://www.waze.com/en-GB/editor?env=usa&lon={event['Longitude']}&lat={event['Latitude']}&zoomLevel=15"
-    url511 = f"https://511on.ca/map#{URLType}-{event['ID']}"
+    url511 = f"https://hotline.gov.sk.ca/map#{URLType}-{event['ID']}"
     urlLivemap = f"https://www.waze.com/live-map/directions?dir_first=no&latlng={event['Latitude']}%2C{event['Longitude']}&overlay=false&zoom=16"
 
     embed = DiscordEmbed(title=f"Closure Update", color='ff9a00')
@@ -246,62 +295,60 @@ def check_and_post_events():
         if event['IsFullClosure']:
             # Create a point from the event's coordinates
             point = Point(event['Latitude'], event['Longitude'])
-            # Check if the point is within the polygon
-            if polygon_filterPolygon.contains(point) | skipPolygon:
-                # Try to get the event with the specified ID and isActive=1 from the DynamoDB table
-                dbResponse = table.query(
-                    KeyConditionExpression=Key('EventID').eq(event['ID']),
-                    FilterExpression=Attr('isActive').eq(1)
-                )
-                #If the event is not in the DynamoDB table
-                if not dbResponse['Items']:
-                    # Set the EventID key in the event data
-                    event['EventID'] = event['ID']
-                    # Set the isActive attribute
-                    event['isActive'] = 1
-                    # set LastTouched
-                    event['lastTouched'] = utc_timestamp
-                    event['DetectedPolygon'] = check_which_polygon_point(point)
-                    # Convert float values in the event to Decimal
-                    event = float_to_decimal(event)
-                    # If the event is within the specified area and has not been posted before, post it to Discord
-                    post_to_discord_closure(event,event['DetectedPolygon'])
-                    # Add the event ID to the DynamoDB table
-                    table.put_item(Item=event)
-                else:
-                    # We have seen this event before
-                    # First, let's see if it has a lastupdated time
-                    event = float_to_decimal(event)
-                    lastUpdated = dbResponse['Items'][0].get('LastUpdated')
-                    if lastUpdated != None:
-                        # Now, see if the version we stored is different
-                        if lastUpdated != event['LastUpdated']:
-                            # Store the most recent updated time:
-                            event['EventID'] = event['ID']
-                            event['isActive'] = 1
-                            event['lastTouched'] = utc_timestamp
-                            event['DetectedPolygon'] = check_which_polygon_point(point)
-                            # It's different, so we should fire an update notification
-                            post_to_discord_updated(event,event['DetectedPolygon'])
-                            table.put_item(Item=event)
-                    # get the lasttouched time
-                    lastTouched_datetime = datetime.fromtimestamp(int(dbResponse['Items'][0].get('lastTouched')))
-                    # store the current time now
-                    now = datetime.fromtimestamp(utc_timestamp)
-                    # Compute the difference in minutes between now and lastUpdated
-                    time_diff_min = (now - lastTouched_datetime).total_seconds() / 60
-                    # Compute the variability
-                    variability = random.uniform(-2, 2)  # random float between -2 and 2
-                    # Add variability to the time difference
-                    time_diff_min += variability
-                    # If time_diff_min > 5, then more than 5 minutes have passed (considering variability)
-                    if abs(time_diff_min) > 5:
-                        # let's store that we just saw it to keep track of the last touch time
-                        table.update_item(
-                            Key={'EventID': event['ID']},
-                            UpdateExpression="SET lastTouched = :val",
-                            ExpressionAttributeValues={':val': utc_timestamp}
-                        )
+            # Try to get the event with the specified ID and isActive=1 from the DynamoDB table
+            dbResponse = table.query(
+                KeyConditionExpression=Key('EventID').eq(event['ID']),
+                FilterExpression=Attr('isActive').eq(1)
+            )
+            #If the event is not in the DynamoDB table
+            if not dbResponse['Items']:
+                # Set the EventID key in the event data
+                event['EventID'] = event['ID']
+                # Set the isActive attribute
+                event['isActive'] = 1
+                # set LastTouched
+                event['lastTouched'] = utc_timestamp
+                event['DetectedPolygon'] = check_which_polygon_point(point)
+                # Convert float values in the event to Decimal
+                event = float_to_decimal(event)
+                # If the event is within the specified area and has not been posted before, post it to Discord
+                post_to_discord_closure(event,event['DetectedPolygon'])
+                # Add the event ID to the DynamoDB table
+                table.put_item(Item=event)
+            else:
+                # We have seen this event before
+                # First, let's see if it has a lastupdated time
+                event = float_to_decimal(event)
+                lastUpdated = dbResponse['Items'][0].get('LastUpdated')
+                if lastUpdated != None:
+                    # Now, see if the version we stored is different
+                    if lastUpdated != event['LastUpdated']:
+                        # Store the most recent updated time:
+                        event['EventID'] = event['ID']
+                        event['isActive'] = 1
+                        event['lastTouched'] = utc_timestamp
+                        event['DetectedPolygon'] = check_which_polygon_point(point)
+                        # It's different, so we should fire an update notification
+                        post_to_discord_updated(event,event['DetectedPolygon'])
+                        table.put_item(Item=event)
+                # get the lasttouched time
+                lastTouched_datetime = datetime.fromtimestamp(int(dbResponse['Items'][0].get('lastTouched')))
+                # store the current time now
+                now = datetime.fromtimestamp(utc_timestamp)
+                # Compute the difference in minutes between now and lastUpdated
+                time_diff_min = (now - lastTouched_datetime).total_seconds() / 60
+                # Compute the variability
+                variability = random.uniform(-2, 2)  # random float between -2 and 2
+                # Add variability to the time difference
+                time_diff_min += variability
+                # If time_diff_min > 5, then more than 5 minutes have passed (considering variability)
+                if abs(time_diff_min) > 5:
+                    # let's store that we just saw it to keep track of the last touch time
+                    table.update_item(
+                        Key={'EventID': event['ID']},
+                        UpdateExpression="SET lastTouched = :val",
+                        ExpressionAttributeValues={':val': utc_timestamp}
+                    )
 
 def close_recent_events(responseObject):
     #function uses the API response from ON511 to determine what we stored in the DB that can now be closed
@@ -315,11 +362,21 @@ def close_recent_events(responseObject):
     response = table.scan(
         FilterExpression=Attr('isActive').eq(1)
     )
-
     # Iterate over the items
     for item in response['Items']:
+        markCompleted = False
         # If an item's ID is not in the set of active event IDs, mark it as closed
         if item['EventID'] not in active_event_ids:
+            markCompleted = True
+        else:
+            # item exists, but now we need to check to see if it's no longer a full closure
+            event = [x for x in data if x['ID']==item['EventID']]
+            if event:
+                if event[0]['IsFullClosure'] is False:
+                    #now it's no longer a full closure - markt it as closed.
+                    markCompleted = True
+        # process relevant completions
+        if markCompleted == True:
             # Convert float values in the item to Decimal
             item = float_to_decimal(item)
             # Remove the isActive attribute from the item
