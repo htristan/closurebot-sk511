@@ -640,5 +640,42 @@ def update_last_execution_day():
         }
     )
 
+def generate_geojson():
+    # Create a dictionary to store GeoJSON
+    geojson = {
+        "type": "FeatureCollection",
+        "features": []
+    }
+
+    # Define your polygons and their names
+    polygons = {
+        "GTA": polygon_GTA,
+        "Central Ontario": polygon_CentralOntario,
+        "Northern Ontario": polygon_NorthernOntario,
+        "Southern Ontario": polygon_SouthernOntario
+    }
+
+    # Convert each polygon to GeoJSON format
+    for name, polygon in polygons.items():
+        feature = {
+            "type": "Feature",
+            "properties": {
+                "name": name
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    list(map(lambda coord: [coord[1], coord[0]], polygon.exterior.coords))  # Convert (lat, lon) to [lon, lat]
+                ]
+            }
+        }
+        geojson["features"].append(feature)
+
+    # Write GeoJSON to a file
+    with open("polygons.geojson", "w") as f:
+        json.dump(geojson, f, indent=2)
+
+    print("GeoJSON saved as 'polygons.geojson'")
+
 def lambda_handler(event, context):
     check_and_post_events()
