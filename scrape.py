@@ -507,12 +507,22 @@ AWS_SECRET_ACCESS_KEY = os.environ['AWS_DB_SECRET_ACCESS_KEY']
 discordUsername = "ON511"
 discordAvatarURL = "https://pbs.twimg.com/profile_images/1256233970905341959/EKlyRkOM_400x400.jpg"
 
-# Create a DynamoDB resource object
-dynamodb = boto3.resource('dynamodb',
-    region_name='us-east-1',
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-    )
+# Fallback mechanism for credentials
+try:
+    # Use environment variables if they exist
+    if 'AWS_DB_KEY' in os.environ and 'AWS_DB_SECRET_ACCESS_KEY' in os.environ:
+        dynamodb = boto3.resource(
+            'dynamodb',
+            region_name='us-east-1',
+            aws_access_key_id=os.environ['AWS_DB_KEY'],
+            aws_secret_access_key=os.environ['AWS_DB_SECRET_ACCESS_KEY']
+        )
+    else:
+        # Otherwise, use IAM role permissions (default behavior of boto3)
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+except (NoCredentialsError, PartialCredentialsError):
+    print("AWS credentials are not properly configured. Ensure IAM role or environment variables are set.")
+    raise
 
 # Specify the name of your DynamoDB table
 table = dynamodb.Table(config['db_name'])
