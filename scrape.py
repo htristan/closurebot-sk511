@@ -501,8 +501,8 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
-AWS_ACCESS_KEY_ID = os.environ['AWS_DB_KEY']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_DB_SECRET_ACCESS_KEY']
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_DB_KEY', None)
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_DB_SECRET_ACCESS_KEY', None)
 
 discordUsername = "ON511"
 discordAvatarURL = "https://pbs.twimg.com/profile_images/1256233970905341959/EKlyRkOM_400x400.jpg"
@@ -510,12 +510,12 @@ discordAvatarURL = "https://pbs.twimg.com/profile_images/1256233970905341959/EKl
 # Fallback mechanism for credentials
 try:
     # Use environment variables if they exist
-    if 'AWS_DB_KEY' in os.environ and 'AWS_DB_SECRET_ACCESS_KEY' in os.environ:
+     if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
         dynamodb = boto3.resource(
             'dynamodb',
             region_name='us-east-1',
-            aws_access_key_id=os.environ['AWS_DB_KEY'],
-            aws_secret_access_key=os.environ['AWS_DB_SECRET_ACCESS_KEY']
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY
         )
     else:
         # Otherwise, use IAM role permissions (default behavior of boto3)
