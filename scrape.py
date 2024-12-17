@@ -510,7 +510,7 @@ discordAvatarURL = "https://pbs.twimg.com/profile_images/1256233970905341959/EKl
 # Fallback mechanism for credentials
 try:
     # Use environment variables if they exist
-     if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+    if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
         dynamodb = boto3.resource(
             'dynamodb',
             region_name='us-east-1',
