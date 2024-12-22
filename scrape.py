@@ -715,7 +715,8 @@ def check_and_post_events():
             # Try to get the event with the specified ID and isActive=1 from the DynamoDB table
             dbResponse = table.query(
                 KeyConditionExpression=Key('EventID').eq(event['ID']),
-                FilterExpression=Attr('isActive').eq(1)
+                FilterExpression=Attr('isActive').eq(1),
+                ConsistentRead=True
             )
             #If the event is not in the DynamoDB table
             if not dbResponse['Items']:
@@ -763,19 +764,20 @@ def check_and_post_events():
                 variability = random.uniform(-2, 2)  # random float between -2 and 2
                 # Add variability to the time difference
                 time_diff_min += variability
-                # # Log calculated time difference and variability
-                # logging.info(
-                #     f"EventID: {event['ID']}, TimeDiff: {time_diff_min:.2f} minutes (Variability: {variability:.2f}), LastTouched: {lastTouched_datetime}, Now: {now}"
-                # )
+                # Log calculated time difference and variability
+                logging.info(
+                    f"EventID: {event['ID']}, TimeDiff: {time_diff_min:.2f} minutes (Variability: {variability:.2f}), LastTouched: {lastTouched_datetime}, Now: {now}"
+                )
                 # If time_diff_min > 5, then more than 5 minutes have passed (considering variability)
                 if abs(time_diff_min) > 5:
-                    # logging.info(f"EventID: {event['ID']} - Updating lastTouched to {utc_timestamp}.")
-                    # let's store that we just saw it to keep track of the last touch time
-                    table.update_item(
+                    logging.info(f"EventID: {event['ID']} - Updating lastTouched to {utc_timestamp}.")
+                    response = table.update_item(
                         Key={'EventID': event['ID']},
                         UpdateExpression="SET lastTouched = :val",
                         ExpressionAttributeValues={':val': utc_timestamp}
                     )
+                    logging.info(f"Update response for EventID {event['ID']}: {response}")
+                    logging.info(f"EventID: {event['ID']} - lastTouched updated successfully.")
                 # else:
                 #     logging.info(f"EventID: {event['ID']} - No update needed. TimeDiff: {time_diff_min:.2f}")
 
