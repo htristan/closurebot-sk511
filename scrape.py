@@ -536,8 +536,15 @@ except (NoCredentialsError, PartialCredentialsError):
 # Specify the name of your DynamoDB table
 table = dynamodb.Table(config['db_name'])
 
+utc_timestamp = None
+
+def update_utc_timestamp():
+    global utc_timestamp
+    utc_timestamp = calendar.timegm(datetime.utcnow().timetuple())
+
 # set the current UTC timestamp for use in a few places
-utc_timestamp = calendar.timegm(datetime.utcnow().timetuple())
+update_utc_timestamp()
+
 
 # Function to convert the float values in the event data to Decimal, as DynamoDB doesn't support float type
 def float_to_decimal(event):
@@ -719,6 +726,7 @@ def check_and_post_events():
                 ConsistentRead=True
             )
             #If the event is not in the DynamoDB table
+            update_utc_timestamp()
             if not dbResponse['Items']:
                 # Set the EventID key in the event data
                 event['EventID'] = event['ID']
