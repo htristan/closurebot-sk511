@@ -22,6 +22,9 @@ logging.basicConfig(
     ]
 )
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 # Define the coordinates of your polygons
 polygon_GTA = Polygon([
     (43.90145674, -78.43244733),
