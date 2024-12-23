@@ -11,7 +11,19 @@ import os
 from datetime import datetime, timedelta, date
 import calendar
 from pytz import timezone
+import logging
 import random
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler()  # Logs to the console
+    ]
+)
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # Define the coordinates of your polygons
 polygon_NorthOfSaskatoon = Polygon([
@@ -103,24 +115,41 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
-AWS_ACCESS_KEY_ID = os.environ['AWS_DB_KEY']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_DB_SECRET_ACCESS_KEY']
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_DB_KEY', None)
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_DB_SECRET_ACCESS_KEY', None)
 
 discordUsername = "HighwayHotline"
 discordAvatarURL = "https://pbs.twimg.com/profile_images/1546604255641051137/ErA4kJup_400x400.jpg"
 
-# Create a DynamoDB resource object
-dynamodb = boto3.resource('dynamodb',
-    region_name='us-east-1',
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-    )
+# Fallback mechanism for credentials
+try:
+    # Use environment variables if they exist
+    if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+        dynamodb = boto3.resource(
+            'dynamodb',
+            region_name='us-east-1',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+        )
+    else:
+        # Otherwise, use IAM role permissions (default behavior of boto3)
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+except (NoCredentialsError, PartialCredentialsError):
+    print("AWS credentials are not properly configured. Ensure IAM role or environment variables are set.")
+    raise
 
 # Specify the name of your DynamoDB table
 table = dynamodb.Table(config['db_name'])
 
+utc_timestamp = None
+
+def update_utc_timestamp():
+    global utc_timestamp
+    utc_timestamp = calendar.timegm(datetime.utcnow().timetuple())
+
 # set the current UTC timestamp for use in a few places
-utc_timestamp = calendar.timegm(datetime.utcnow().timetuple())
+update_utc_timestamp()
+
 
 # Function to convert the float values in the event data to Decimal, as DynamoDB doesn't support float type
 def float_to_decimal(event):
@@ -297,13 +326,15 @@ def check_and_post_events():
             point = Point(event['Latitude'], event['Longitude'])
             # Try to get the event with the specified ID and isActive=1 from the DynamoDB table
             dbResponse = table.query(
-                KeyConditionExpression=Key('EventID').eq(event['ID']),
-                FilterExpression=Attr('isActive').eq(1)
+                KeyConditionExpression=Key('EventID').eq(str(event['ID'])),
+                FilterExpression=Attr('isActive').eq(1),
+                ConsistentRead=True
             )
             #If the event is not in the DynamoDB table
+            update_utc_timestamp()
             if not dbResponse['Items']:
                 # Set the EventID key in the event data
-                event['EventID'] = event['ID']
+                event['EventID'] = str(event['ID'])
                 # Set the isActive attribute
                 event['isActive'] = 1
                 # set LastTouched
@@ -331,8 +362,13 @@ def check_and_post_events():
                         # It's different, so we should fire an update notification
                         post_to_discord_updated(event,event['DetectedPolygon'])
                         table.put_item(Item=event)
-                # get the lasttouched time
-                lastTouched_datetime = datetime.fromtimestamp(int(dbResponse['Items'][0].get('lastTouched')))
+                # Get the lastTouched time
+                lastTouched = dbResponse['Items'][0].get('lastTouched')
+                if lastTouched is None:
+                    logging.warning(f"EventID: {event['ID']} - Missing lastTouched. Setting it now.")
+                    lastTouched_datetime = now
+                else:
+                    lastTouched_datetime = datetime.fromtimestamp(int(lastTouched))
                 # store the current time now
                 now = datetime.fromtimestamp(utc_timestamp)
                 # Compute the difference in minutes between now and lastUpdated
@@ -341,14 +377,22 @@ def check_and_post_events():
                 variability = random.uniform(-2, 2)  # random float between -2 and 2
                 # Add variability to the time difference
                 time_diff_min += variability
+                # Log calculated time difference and variability
+                logging.info(
+                    f"EventID: {event['ID']}, TimeDiff: {time_diff_min:.2f} minutes (Variability: {variability:.2f}), LastTouched: {lastTouched_datetime}, Now: {now}"
+                )
                 # If time_diff_min > 5, then more than 5 minutes have passed (considering variability)
                 if abs(time_diff_min) > 5:
-                    # let's store that we just saw it to keep track of the last touch time
-                    table.update_item(
-                        Key={'EventID': event['ID']},
+                    logging.info(f"EventID: {event['ID']} - Updating lastTouched to {utc_timestamp}.")
+                    response = table.update_item(
+                        Key={'EventID': str(event['ID'])},
                         UpdateExpression="SET lastTouched = :val",
                         ExpressionAttributeValues={':val': utc_timestamp}
                     )
+                    logging.info(f"Update response for EventID {event['ID']}: {response}")
+                    logging.info(f"EventID: {event['ID']} - lastTouched updated successfully.")
+                # else:
+                #     logging.info(f"EventID: {event['ID']} - No update needed. TimeDiff: {time_diff_min:.2f}")
 
 def close_recent_events(responseObject):
     #function uses the API response from ON511 to determine what we stored in the DB that can now be closed
@@ -381,7 +425,7 @@ def close_recent_events(responseObject):
             item = float_to_decimal(item)
             # Remove the isActive attribute from the item
             table.update_item(
-                Key={'EventID': item['EventID']},
+                Key={'EventID': str(item['EventID'])},
                 UpdateExpression="SET isActive = :val",
                 ExpressionAttributeValues={':val': 0}
             )
@@ -408,7 +452,7 @@ def cleanup_old_events():
         for item in response['Items']:
             table.delete_item(
                 Key={
-                    'EventID': item['EventID']
+                    'EventID': str(item['EventID'])
                 }
             )
         # If the scan returned a LastEvaluatedKey, continue the scan from where it left off
@@ -440,5 +484,48 @@ def update_last_execution_day():
         }
     )
 
+def generate_geojson():
+    # Create a dictionary to store GeoJSON
+    geojson = {
+        "type": "FeatureCollection",
+        "features": []
+    }
+
+    # Define your polygons and their names
+    polygons = {
+        "GTA": polygon_GTA,
+        "Central Ontario": polygon_CentralOntario,
+        "Northern Ontario": polygon_NorthernOntario,
+        "Southern Ontario": polygon_SouthernOntario
+    }
+
+    # Convert each polygon to GeoJSON format
+    for name, polygon in polygons.items():
+        feature = {
+            "type": "Feature",
+            "properties": {
+                "name": name
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    list(map(lambda coord: [coord[1], coord[0]], polygon.exterior.coords))  # Convert (lat, lon) to [lon, lat]
+                ]
+            }
+        }
+        geojson["features"].append(feature)
+
+    # Write GeoJSON to a file
+    with open("polygons.geojson", "w") as f:
+        json.dump(geojson, f, indent=2)
+
+    print("GeoJSON saved as 'polygons.geojson'")
+
 def lambda_handler(event, context):
     check_and_post_events()
+
+if __name__ == "__main__":
+    # Simulate the Lambda environment by passing an empty event and context
+    event = {}
+    context = None
+    lambda_handler(event, context)
