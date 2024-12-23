@@ -753,7 +753,7 @@ def check_and_post_events():
                     # Now, see if the version we stored is different
                     if lastUpdated != event['LastUpdated']:
                         # Store the most recent updated time:
-                        event['EventID'] = event['ID']
+                        event['EventID'] = str(event['ID'])
                         event['isActive'] = 1
                         event['lastTouched'] = utc_timestamp
                         event['DetectedPolygon'] = check_which_polygon_point(point)
@@ -798,7 +798,7 @@ def close_recent_events(responseObject):
     data = json.loads(responseObject.text)
 
     # Create a set of active event IDs
-    active_event_ids = {event['ID'] for event in data}
+    active_event_ids = {str(event['ID']) for event in data}
 
     # Get the list of event IDs in the table
     response = table.scan(
