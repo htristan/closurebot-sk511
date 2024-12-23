@@ -724,7 +724,7 @@ def check_and_post_events():
             point = Point(event['Latitude'], event['Longitude'])
             # Try to get the event with the specified ID and isActive=1 from the DynamoDB table
             dbResponse = table.query(
-                KeyConditionExpression=Key('EventID').eq(event['ID']),
+                KeyConditionExpression=Key('EventID').eq(str(event['ID'])),
                 FilterExpression=Attr('isActive').eq(1),
                 ConsistentRead=True
             )
@@ -732,7 +732,7 @@ def check_and_post_events():
             update_utc_timestamp()
             if not dbResponse['Items']:
                 # Set the EventID key in the event data
-                event['EventID'] = event['ID']
+                event['EventID'] = str(event['ID'])
                 # Set the isActive attribute
                 event['isActive'] = 1
                 # set LastTouched
@@ -783,7 +783,7 @@ def check_and_post_events():
                 if abs(time_diff_min) > 5:
                     logging.info(f"EventID: {event['ID']} - Updating lastTouched to {utc_timestamp}.")
                     response = table.update_item(
-                        Key={'EventID': event['ID']},
+                        Key={'EventID': str(event['ID'])},
                         UpdateExpression="SET lastTouched = :val",
                         ExpressionAttributeValues={':val': utc_timestamp}
                     )
@@ -823,7 +823,7 @@ def close_recent_events(responseObject):
             item = float_to_decimal(item)
             # Remove the isActive attribute from the item
             table.update_item(
-                Key={'EventID': item['EventID']},
+                Key={'EventID': str(item['EventID'])},
                 UpdateExpression="SET isActive = :val",
                 ExpressionAttributeValues={':val': 0}
             )
@@ -850,7 +850,7 @@ def cleanup_old_events():
         for item in response['Items']:
             table.delete_item(
                 Key={
-                    'EventID': item['EventID']
+                    'EventID': str(item['EventID'])
                 }
             )
         # If the scan returned a LastEvaluatedKey, continue the scan from where it left off
