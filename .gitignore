@@ -1,3 +1,5 @@
 config.json
 .env_vars
 venv/
+emailsamples/
+closurebot-on511.code-workspace

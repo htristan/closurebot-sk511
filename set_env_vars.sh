@@ -16,4 +16,4 @@ else
     echo "Function name: $function_name"
 fi
 
-echo "FUNCTION_NAME=$function_name" >> $GITHUB_ENV
+echo "FUNCTION_NAME=$function_name" >> "$GITHUB_OUTPUT"
