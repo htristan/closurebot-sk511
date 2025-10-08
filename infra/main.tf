@@ -17,10 +17,10 @@ locals {
   # Try to get GitHub repo from environment variable, fall back to variable
   github_repo = var.github_repo != "" ? var.github_repo : (try(getenv("GITHUB_REPOSITORY"), ""))
   
-  # Extract project name from GitHub repo (e.g., "username/closurebot-on511" -> "closurebot-on511")
+  # Extract project name from GitHub repo (e.g., "username/closurebot-sk511" -> "closurebot-sk511")
   # If no repo provided, use a default based on directory name
   detected_project = var.project_name != "" ? var.project_name : (
-    local.github_repo != "" ? split("/", local.github_repo)[1] : "closurebot-on511"
+    local.github_repo != "" ? split("/", local.github_repo)[1] : "closurebot-sk511"
   )
   project_name     = local.detected_project
 }

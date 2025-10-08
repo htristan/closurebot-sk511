@@ -1,12 +1,12 @@
 # Infrastructure as Code
 
-This directory contains Terraform configuration for the closurebot-on511 project's AWS infrastructure.
+This directory contains Terraform configuration for the closurebot-sk511 project's AWS infrastructure.
 
 ## What it creates
 
 - **ECR Repositories**: Two ECR repos for container images
-  - `closurebot-on511-prod`: Production images (master branch)
-  - `closurebot-on511-dev`: Development images (develop branch)
+  - `closurebot-sk511-prod`: Production images (master branch)
+  - `closurebot-sk511-dev`: Development images (develop branch)
 - **Lifecycle Policies**: Automatic cleanup of old images
   - Keeps latest-* images safe
   - Deletes commit-tagged images older than 2 days
@@ -37,7 +37,7 @@ terraform output
 The configuration auto-detects the project name from the GitHub repository. You can override with:
 
 ```bash
-terraform apply -var="project_name=closurebot-on511" -var="github_repo=username/closurebot-on511"
+terraform apply -var="project_name=closurebot-sk511" -var="github_repo=username/closurebot-sk511"
 ```
 
 ## Outputs

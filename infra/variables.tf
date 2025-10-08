@@ -2,7 +2,7 @@
 # Auto-detects project name from GitHub repository name
 
 variable "project_name" {
-  description = "Name of the project (e.g., closurebot-on511). Auto-detected from GITHUB_REPOSITORY if not provided."
+  description = "Name of the project (e.g., closurebot-sk511). Auto-detected from GITHUB_REPOSITORY if not provided."
   type        = string
   default     = ""
 }
@@ -14,7 +14,7 @@ variable "aws_region" {
 }
 
 variable "github_repo" {
-  description = "GitHub repository in format owner/repo (e.g., username/closurebot-on511). Auto-detected from GITHUB_REPOSITORY env var if not provided."
+  description = "GitHub repository in format owner/repo (e.g., username/closurebot-sk511). Auto-detected from GITHUB_REPOSITORY env var if not provided."
   type        = string
   default     = ""
 }
