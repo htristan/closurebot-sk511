@@ -52,22 +52,22 @@ def mock_dynamodb_table():
 @pytest.fixture
 def mock_config():
     return {
-        'Thread-GTA': '123456',
-        'Thread-Central_EasternOntario': '234567',
-        'Thread-NorthernOntario': '345678',
-        'Thread-SouthernOntario': '456789',
+        'Thread-Regina': '123456',
+        'Thread-Saskatoon': '234567',
+        'Thread-NorthOfSaskatoon': '345678',
+        'Thread-SouthOfSaskatoon': '456789',
         'Thread-CatchAll': '567890',
-        'timezone': 'US/Eastern',
-        'license_notice': 'Test License Notice',
+        'timezone': 'US/Central',
+        'license_notice': 'Contains information licensed under the Open Government Licence – Saskatchewan.',
         'db_name': 'test-db'
     }
 
 # Polygon Tests
 @pytest.mark.parametrize("coordinates,expected_region", [
-    ((43.6532, -79.3832), 'GTA'),  # Toronto
-    ((45.4215, -75.6972), 'Central & Eastern Ontario'),  # Ottawa
-    ((46.4917, -80.9930), 'Northern Ontario'),  # Sudbury
-    ((43.2557, -79.8711), 'Southern Ontario'),  # Hamilton
+    ((50.4452, -104.6189), 'Regina'),  # Regina
+    ((52.1579, -106.6702), 'Saskatoon'),  # Saskatoon
+    ((53.5461, -104.2141), 'NorthOfSaskatoon'),  # North of Saskatoon
+    ((51.2139, -102.4628), 'SouthOfSaskatoon'),  # South of Saskatoon
     ((0, 0), 'Other'),  # Invalid point
 ])
 def test_check_which_polygon_point(coordinates, expected_region):
@@ -77,10 +77,10 @@ def test_check_which_polygon_point(coordinates, expected_region):
 
 # Thread ID Tests
 @pytest.mark.parametrize("region,expected_thread", [
-    ('GTA', '123456'),
-    ('Central & Eastern Ontario', '234567'),
-    ('Northern Ontario', '345678'),
-    ('Southern Ontario', '456789'),
+    ('Regina', '123456'),
+    ('Saskatoon', '234567'),
+    ('NorthOfSaskatoon', '345678'),
+    ('SouthOfSaskatoon', '456789'),
     ('Other', '567890'),
     ('Invalid', '567890'),
 ])
@@ -90,8 +90,8 @@ def test_getThreadID(region, expected_thread, mock_config):
 
 # Time Conversion Tests
 @pytest.mark.parametrize("timestamp,expected_time", [
-    (1672574400, '2023-Jan-01 07:00 AM'),  # Regular case
-    (1672531200, '2022-Dec-31 07:00 PM'),  # Corrected expected time
+    (1672574400, '2023-Jan-01 06:00 AM'),  # Regular case (Central time)
+    (1672531200, '2022-Dec-31 06:00 PM'),  # Corrected expected time (Central time)
 ])
 @freeze_time("2023-01-01 12:00:00", tz_offset=0)
 def test_unix_to_readable(timestamp, expected_time):
@@ -101,7 +101,7 @@ def test_unix_to_readable(timestamp, expected_time):
 @patch('scrape.DiscordWebhook')
 def test_post_to_discord_closure(mock_webhook, sample_event, mock_config):
     with patch('scrape.config', mock_config):
-        post_to_discord_closure(sample_event, 'GTA')
+        post_to_discord_closure(sample_event, 'Regina')
         mock_webhook.assert_called_once()
         webhook_instance = mock_webhook.return_value
         webhook_instance.execute.assert_called_once()
@@ -109,7 +109,7 @@ def test_post_to_discord_closure(mock_webhook, sample_event, mock_config):
 @patch('scrape.DiscordWebhook')
 def test_post_to_discord_updated(mock_webhook, sample_event, mock_config):
     with patch('scrape.config', mock_config):
-        post_to_discord_updated(sample_event, 'GTA')
+        post_to_discord_updated(sample_event, 'Saskatoon')
         mock_webhook.assert_called_once()
         webhook_instance = mock_webhook.return_value
         webhook_instance.execute.assert_called_once()
@@ -117,7 +117,7 @@ def test_post_to_discord_updated(mock_webhook, sample_event, mock_config):
 @patch('scrape.DiscordWebhook')
 def test_post_to_discord_completed(mock_webhook, sample_event, mock_config):
     with patch('scrape.config', mock_config):
-        post_to_discord_completed(sample_event, 'GTA')
+        post_to_discord_completed(sample_event, 'NorthOfSaskatoon')
         mock_webhook.assert_called_once()
         webhook_instance = mock_webhook.return_value
         webhook_instance.execute.assert_called_once()
@@ -233,5 +233,5 @@ def test_check_and_post_events_api_error(mock_get):
     
     with patch('scrape.table', table):
         mock_get.return_value.ok = False
-        with pytest.raises(Exception, match='Issue connecting to ON511 API'):
+        with pytest.raises(Exception, match='Issue connecting to SK511 API'):
             check_and_post_events()
