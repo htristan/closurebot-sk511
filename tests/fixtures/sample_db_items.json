@@ -11,8 +11,8 @@
     "StartDate": 1675260000,
     "PlannedEndDate": null,
     "LanesAffected": "All lanes closed",
-    "Latitude": 59.316268538201,
-    "Longitude": -107.111409407081,
+    "Latitude": "59.316268538201",
+    "Longitude": "-107.111409407081",
     "LatitudeSecondary": null,
     "LongitudeSecondary": null,
     "EventType": "closures",
@@ -36,59 +36,5 @@
     "isActive": 0,
     "lastTouched": 1735406658,
     "DetectedPolygon": "Other"
-  },
-  {
-    "ID": 4309,
-    "SourceId": "15090",
-    "Organization": "ERS",
-    "RoadwayName": "HWY-1 Eastbound",
-    "DirectionOfTravel": "Unknown",
-    "Description": "Under Construction on  ramp from HWY-1 Eastbound to  Tower Rd. All lanes closed. Activities: Use alternate route, Watch for equipment & persons working.",
-    "Reported": 1759843800,
-    "LastUpdated": 1759944791,
-    "StartDate": 1759843800,
-    "PlannedEndDate": 1760050800,
-    "LanesAffected": "All lanes closed",
-    "Latitude": 50.4389769489901,
-    "Longitude": -104.496897201684,
-    "LatitudeSecondary": 50.439907542349,
-    "LongitudeSecondary": -104.497353458793,
-    "EventType": "closures",
-    "EventSubType": "Under Construction",
-    "IsFullClosure": true,
-    "Severity": "None",
-    "Comment": "Tower Road EB Bridge closed due to construction. Please follow all signage and detour east toward Pilot Butte bridge to go back into Regina. ",
-    "EncodedPolyline": "m|xrHnux|RmBQiFSwCMiDWoBUu@IkEi@[EyAQ}@GuACe@?s@DeBZa@J]J{@^uAx@o@f@i@d@y@~@q@z@m@`AcA`BgBxCwA`CgCbEo@|@e@l@]^_@\\]Vo@b@i@Zm@Va@Lc@Hy@L[J",
-    "Restrictions": {
-      "Width": null,
-      "Height": null,
-      "Length": null,
-      "Weight": null,
-      "Speed": null
-    },
-    "DetourPolyline": "",
-    "DetourInstructions": "",
-    "Recurrence": "<b>Tue, Wed, Thu:</b><br/>Active all day<br/><br/>",
-    "RecurrenceSchedules": [
-      {
-        "StartDate": "10/7/2025 7:30:00 AM-06:00:00",
-        "EndDate": "10/9/2025 5:00:00 PM-06:00:00",
-        "Times": [
-          {
-            "StartTime": "00:00:00-06:00:00",
-            "EndTime": "23:59:59-06:00:00"
-          }
-        ],
-        "DaysOfWeek": [
-          "Tuesday",
-          "Wednesday",
-          "Thursday"
-        ]
-      }
-    ],
-    "EventID": "4309",
-    "isActive": 0,
-    "lastTouched": 1735406658,
-    "DetectedPolygon": "Regina"
   }
 ]

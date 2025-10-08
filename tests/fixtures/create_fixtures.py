@@ -37,10 +37,10 @@ def create_db_fixture():
         # Get a few items from the table
         response = table.scan(Limit=3)
         
-        # Convert Decimal objects to float for JSON serialization
+        # Keep Decimal objects as strings for JSON serialization (tests will convert back to Decimal)
         def decimal_default(obj):
             if isinstance(obj, Decimal):
-                return float(obj)
+                return str(obj)
             raise TypeError
         
         # Save to fixture file
