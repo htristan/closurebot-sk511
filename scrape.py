@@ -403,38 +403,45 @@ def close_recent_events(responseObject):
     # Create a set of active event IDs
     active_event_ids = {str(event['ID']) for event in data}
 
-    # Get the list of event IDs in the table
-    response = table.scan(
-        FilterExpression=Attr('isActive').eq(1)
-    )
-    # Iterate over the items
-    for item in response['Items']:
-        markCompleted = False
-        # If an item's ID is not in the set of active event IDs, mark it as closed
-        if item['EventID'] not in active_event_ids:
-            markCompleted = True
-        else:
-            # item exists, but now we need to check to see if it's no longer a full closure
-            event = [x for x in data if x['ID']==item['EventID']]
-            if event:
-                if event[0]['IsFullClosure'] is False:
-                    #now it's no longer a full closure - markt it as closed.
-                    markCompleted = True
-        # process relevant completions
-        if markCompleted == True:
-            # Convert float values in the item to Decimal
-            item = float_to_decimal(item)
-            # Remove the isActive attribute from the item
-            table.update_item(
-                Key={'EventID': str(item['EventID'])},
-                UpdateExpression="SET isActive = :val",
-                ExpressionAttributeValues={':val': 0}
-            )
-            # Notify about closure on Discord
-            if 'DetectedPolygon' in item and item['DetectedPolygon'] is not None:
-                post_to_discord_completed(item,item['DetectedPolygon'])
+    # Scan is capped at 1 MB per call. Follow LastEvaluatedKey until every active row is seen.
+    scan_params = {
+        'FilterExpression': Attr('isActive').eq(1)
+    }
+    while True:
+        response = table.scan(**scan_params)
+        for item in response['Items']:
+            markCompleted = False
+            event_id = str(item['EventID'])
+            # If an item's ID is not in the set of active event IDs, mark it as closed
+            if event_id not in active_event_ids:
+                markCompleted = True
             else:
-                post_to_discord_completed(item)
+                # item exists, but now we need to check to see if it's no longer a full closure
+                # API IDs are ints; EventID is stored as a string.
+                event = [x for x in data if str(x['ID']) == event_id]
+                if event:
+                    if event[0]['IsFullClosure'] is False:
+                        #now it's no longer a full closure - markt it as closed.
+                        markCompleted = True
+            # process relevant completions
+            if markCompleted == True:
+                # Convert float values in the item to Decimal
+                item = float_to_decimal(item)
+                # Remove the isActive attribute from the item
+                table.update_item(
+                    Key={'EventID': str(item['EventID'])},
+                    UpdateExpression="SET isActive = :val",
+                    ExpressionAttributeValues={':val': 0}
+                )
+                # Notify about closure on Discord
+                if 'DetectedPolygon' in item and item['DetectedPolygon'] is not None:
+                    post_to_discord_completed(item,item['DetectedPolygon'])
+                else:
+                    post_to_discord_completed(item)
+        if 'LastEvaluatedKey' in response:
+            scan_params['ExclusiveStartKey'] = response['LastEvaluatedKey']
+        else:
+            break
 
 def cleanup_old_events():
     # Get the current time and subtract 5 days to get the cut-off time
