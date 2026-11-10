@@ -10,6 +10,7 @@ import os
 
 # Add this before the scrape import
 os.environ['DISCORD_WEBHOOK'] = 'https://mock-discord-webhook.com/test'
+os.environ['SK511_API_KEY'] = 'test-api-key'
 
 from scrape import (
     check_which_polygon_point, getThreadID, unix_to_readable,
@@ -248,6 +249,12 @@ def test_check_and_post_events(mock_post, mock_get, mock_dynamodb_table, sample_
         
         # Verify Discord post was called for new events
         assert mock_post.call_count > 0
+        assert mock_get.call_args.args[0] == "https://hotline.gov.sk.ca/api/v2/get/event"
+        assert mock_get.call_args.kwargs["params"] == {
+            "key": "test-api-key",
+            "format": "json",
+            "lang": "en",
+        }
 
 # Error Handling Tests
 def test_check_which_polygon_point_invalid_input():
@@ -269,5 +276,24 @@ def test_check_and_post_events_api_error(mock_get):
     
     with patch('scrape.table', table):
         mock_get.return_value.ok = False
-        with pytest.raises(Exception, match='Issue connecting to SK511 API'):
+        mock_get.return_value.status_code = 400
+        mock_get.return_value.text = "<Error><Message>Invalid Key</Message></Error>"
+        with pytest.raises(Exception, match='Issue connecting to SK511 API: 400'):
             check_and_post_events()
+
+@mock_aws
+@patch('scrape.requests.get')
+def test_check_and_post_events_requires_api_key(mock_get):
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    table = dynamodb.create_table(
+        TableName='test-db',
+        KeySchema=[{'AttributeName': 'EventID', 'KeyType': 'HASH'}],
+        AttributeDefinitions=[{'AttributeName': 'EventID', 'AttributeType': 'S'}],
+        BillingMode='PAY_PER_REQUEST'
+    )
+
+    with patch('scrape.table', table), patch.dict(os.environ):
+        os.environ.pop('SK511_API_KEY', None)
+        with pytest.raises(Exception, match='SK511 API key is required'):
+            check_and_post_events()
+        mock_get.assert_not_called()

@@ -13,7 +13,13 @@ def create_event_fixture():
     os.makedirs('tests/fixtures', exist_ok=True)
     
     # Fetch real SK511 API data for testing
-    response = requests.get("https://hotline.gov.sk.ca/api/v2/get/event")
+    api_key = os.environ.get('SK511_API_KEY')
+    if not api_key:
+        raise Exception('SK511 API key is required. Set SK511_API_KEY environment variable.')
+    response = requests.get(
+        "https://hotline.gov.sk.ca/api/v2/get/event",
+        params={'key': api_key, 'format': 'json', 'lang': 'en'},
+    )
     if response.ok:
         events = json.loads(response.text)[:3]
         
