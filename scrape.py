@@ -310,9 +310,19 @@ def check_and_post_events():
         update_last_execution_day()
 
     # Perform API call to SK511 API
-    response = requests.get("https://hotline.gov.sk.ca/api/v2/get/event")
+    api_key = os.environ.get('SK511_API_KEY')
+    if not api_key:
+        raise Exception('SK511 API key is required. Set SK511_API_KEY environment variable.')
+
+    api_url = "https://hotline.gov.sk.ca/api/v2/get/event"
+    params = {
+        'key': api_key,
+        'format': 'json',
+        'lang': 'en'
+    }
+    response = requests.get(api_url, params=params)
     if not response.ok:
-        raise Exception('Issue connecting to SK511 API')
+        raise Exception(f'Issue connecting to SK511 API: {response.status_code} {response.text[:200]}')
 
     #use the response to close out anything recent
     close_recent_events(response)
