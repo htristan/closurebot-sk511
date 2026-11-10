@@ -178,6 +178,42 @@ def test_close_recent_events(sample_db_items):
         close_recent_events(mock_response)
         mock_post.assert_called_once()
 
+@patch('scrape.post_to_discord_completed')
+def test_close_recent_events_scans_every_page(mock_post):
+    page_one_item = {"EventID": "1001", "isActive": 1}
+    page_two_item = {"EventID": "1002", "isActive": 1}
+    mock_table = Mock()
+    mock_table.scan.side_effect = [
+        {"Items": [page_one_item], "LastEvaluatedKey": {"EventID": "1001"}},
+        {"Items": [page_two_item]},
+    ]
+    mock_response = Mock()
+    mock_response.text = json.dumps([])
+
+    with patch('scrape.table', mock_table):
+        close_recent_events(mock_response)
+
+    assert mock_table.scan.call_count == 2
+    assert mock_table.scan.call_args_list[1].kwargs["ExclusiveStartKey"] == {"EventID": "1001"}
+    assert [call.args[0]["EventID"] for call in mock_post.call_args_list] == ["1001", "1002"]
+
+@patch('scrape.post_to_discord_completed')
+def test_close_recent_events_matches_integer_api_ids(mock_post):
+    still_closed = {"EventID": "2", "isActive": 1}
+    no_longer_closed = {"EventID": "9", "isActive": 1}
+    mock_table = Mock()
+    mock_table.scan.return_value = {"Items": [still_closed, no_longer_closed]}
+    mock_response = Mock()
+    mock_response.text = json.dumps([
+        {"ID": 2, "IsFullClosure": True},
+        {"ID": 9, "IsFullClosure": False},
+    ])
+
+    with patch('scrape.table', mock_table):
+        close_recent_events(mock_response)
+
+    assert [call.args[0]["EventID"] for call in mock_post.call_args_list] == ["9"]
+
 # Utility Function Tests
 def test_float_to_decimal(sample_event):
     result = float_to_decimal(sample_event)
