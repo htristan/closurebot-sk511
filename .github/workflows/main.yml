@@ -1,8 +1,9 @@
-name: Deploy to AWS Lambda
+name: Test and Deploy to AWS Lambda
 
 permissions:
   id-token: write
   contents: read
+  packages: write # Added for ECR permissions
 
 on:
   push:
@@ -11,9 +12,39 @@ on:
       - develop
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
+    - name: Copy the correct config file based on branch
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          cp config_production.json config.json
+        elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          cp config_develop.json config.json
+        else
+          cp config_develop.json config.json
+        fi
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Run tests
+      run: |
+        pytest tests/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -32,29 +63,84 @@ jobs:
       id: env_vars
       run: ./set_env_vars.sh
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt -t ./package; fi
-
-    - name: Package code
-      run: |
-        rsync -r --exclude=package . ./package/
-        cd package
-        zip -r ../function.zip .
-
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
-      with: 
+      with:
         audience: sts.amazonaws.com
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: us-east-1
 
-    - name: Deploy to AWS Lambda
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        PROJECT_NAME: closurebot-sk511
       run: |
-        aws lambda update-function-code --function-name ${{ steps.env_vars.outputs.FUNCTION_NAME }} --zip-file fileb://function.zip | jq 'del(.Environment)' | cat
+        # Set ECR repository and tags based on branch
+        if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          ECR_REPOSITORY="${PROJECT_NAME}-prod"
+          IMAGE_TAG="${PROJECT_NAME}-${{ github.sha }}"
+          LATEST_TAG="latest-${PROJECT_NAME}"
+        elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          ECR_REPOSITORY="${PROJECT_NAME}-dev"
+          IMAGE_TAG="${PROJECT_NAME}-dev-${{ github.sha }}"
+          LATEST_TAG="latest-${PROJECT_NAME}-dev"
+        else
+          # Default to dev for other branches
+          ECR_REPOSITORY="${PROJECT_NAME}-dev"
+          IMAGE_TAG="${PROJECT_NAME}-dev-${{ github.sha }}"
+          LATEST_TAG="latest-${PROJECT_NAME}-dev"
+        fi
+        
+        echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> $GITHUB_ENV
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+        
+        # Build and push commit-tagged image
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        
+        # Build and push latest-tagged image (separate build with unique identifier)
+        docker build --build-arg BUILD_TYPE=latest -t $ECR_REGISTRY/$ECR_REPOSITORY:$LATEST_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$LATEST_TAG
+        
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$LATEST_TAG" >> $GITHUB_OUTPUT
+
+    - name: Wait for ECR propagation
+      run: sleep 30
+
+    - name: Deploy to AWS Lambda with retry
+      run: |
+        IMAGE_URI="${{ steps.build-image.outputs.image }}"
+        echo "Deploying image: $IMAGE_URI"
+        
+        # Retry logic for AWS propagation issues
+        MAX_ATTEMPTS=3
+        ATTEMPT=1
+        
+        while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+          echo "=== Attempt $ATTEMPT of $MAX_ATTEMPTS ==="
+          
+          if aws lambda update-function-code \
+            --function-name ${{ steps.env_vars.outputs.FUNCTION_NAME }} \
+            --image-uri $IMAGE_URI; then
+            echo "✅ Successfully deployed to AWS Lambda"
+            break
+          else
+            echo "❌ Attempt $ATTEMPT failed"
+            
+            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+              echo "⏳ Waiting 30 seconds before retry..."
+              sleep 30
+            else
+              echo "❌ All attempts failed"
+              exit 1
+            fi
+          fi
+          
+          ATTEMPT=$((ATTEMPT + 1))
+        done

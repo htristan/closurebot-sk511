@@ -1,5 +1,13 @@
 config.json
 .env_vars
 venv/
+venv311/
 emailsamples/
 closurebot-on511.code-workspace
+*.pyc
+*.pyo
+*.pyd
+# Terraform
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate*
